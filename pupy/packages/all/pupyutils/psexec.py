@@ -1,5 +1,10 @@
 #!/usr/bin/env python2
 
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
+
 import time
 import traceback
 import random
@@ -15,6 +20,7 @@ except ImportError:
 
 import encodings
 
+from io import open
 from base64 import b64encode
 from hashlib import md5
 from threading import Thread
@@ -501,13 +507,13 @@ class ConnectionInfo(object):
 
             return smb
 
-        except SessionError, e:
+        except SessionError as e:
             raise PsExecException(e.getErrorString()[0])
 
-        except (OSError, socket.error), e:
+        except (OSError, socket.error) as e:
             raise PsExecException(e)
 
-        except Exception, e:
+        except Exception as e:
             error = '{}: {}\n{}'.format(type(e).__name__, e, traceback.format_exc())
             raise PsExecException(error)
 
@@ -583,7 +589,7 @@ class FileTransfer(object):
                 x['shi1_netname'][:-1] for x in self._conn.listShares()
             ]
 
-        except Exception, e:
+        except Exception as e:
             self._exception = e
             return []
 
@@ -631,7 +637,7 @@ class FileTransfer(object):
                 ))
             return listing
 
-        except Exception, e:
+        except Exception as e:
             self._exception = e
             return []
 
@@ -640,7 +646,7 @@ class FileTransfer(object):
 
         try:
             self._conn.deleteFile(share, path)
-        except Exception, e:
+        except Exception as e:
             self._exception = e
 
     def mkdir(self, share, path):
@@ -648,7 +654,7 @@ class FileTransfer(object):
 
         try:
             self._conn.createDirectory(share, path)
-        except Exception, e:
+        except Exception as e:
             self._exception = e
 
     def rmdir(self, share, path):
@@ -656,7 +662,7 @@ class FileTransfer(object):
 
         try:
             self._conn.deleteDirectory(share, path)
-        except Exception, e:
+        except Exception as e:
             self._exception = e
 
     def get(self, share, remote, local):
@@ -679,7 +685,7 @@ class FileTransfer(object):
             else:
                 self._conn.getFile(share, remote, local)
 
-        except Exception, e:
+        except Exception as e:
             self._exception = e
 
     def put(self, local, share, remote):
@@ -705,7 +711,7 @@ class FileTransfer(object):
             else:
                 self._conn.putFile(share, remote, local)
 
-        except Exception, e:
+        except Exception as e:
             self._exception = e
 
     def push_to_pipe(self, pipe, data, timeout=90):
@@ -752,7 +758,7 @@ class ShellService(object):
             resp = scmr.hROpenServiceW(self._scmr, self._scHandle, self._name)
             self._serviceHandle = resp['lpServiceHandle']
 
-        except Exception, e:
+        except Exception as e:
             if hasattr(e, 'error_code') and e.error_code == ERROR_SERVICE_DOES_NOT_EXIST:
                 pass
             else:
@@ -783,7 +789,7 @@ class ShellService(object):
 
         try:
             scmr.hRStartServiceW(self._scmr, self._serviceHandle)
-        except Exception, e:
+        except Exception as e:
             if hasattr(e, 'error_code') and e.error_code == ERROR_SERVICE_REQUEST_TIMEOUT:
                 return False
 
@@ -826,7 +832,7 @@ class ShellService(object):
 
         try:
             scmr.hRControlService(self._scmr, self._serviceHandle, scmr.SERVICE_CONTROL_STOP)
-        except Exception, e:
+        except Exception as e:
 
             try:
                 scmr.hRDeleteService(self._scmr, self._serviceHandle)
@@ -1331,7 +1337,7 @@ def pupy_smb_exec(
                 if log_cb:
                     log_cb(None, 'Stager flushed')
 
-            except Exception, e:
+            except Exception as e:
                 if log_cb:
                     import traceback
                     log_cb(None, '{}: {}'.format(
@@ -1344,7 +1350,7 @@ def pupy_smb_exec(
                 if log_cb:
                     log_cb(None, 'Payload flushed')
 
-            except Exception, e:
+            except Exception as e:
                 if log_cb:
                     import traceback
                     log_cb(None, '{}: {}'.format(
@@ -1365,7 +1371,7 @@ def pupy_smb_exec(
                 verbose=True
             )
 
-        except Exception, e:
+        except Exception as e:
             if log_cb:
                 import traceback
                 log_cb(

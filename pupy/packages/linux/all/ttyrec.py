@@ -1,8 +1,13 @@
 # -*- encoding: utf-8 -*-
 
-__all__ = [
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
+
+__all__ = (
     'TTYMon', 'TTYRec', 'start', 'stop', 'dump'
-]
+)
 
 import os
 import re
@@ -12,6 +17,7 @@ import errno
 import struct
 import zlib
 
+from io import open
 from threading import Lock
 
 from pupy import manager, Task
@@ -287,7 +293,7 @@ class TTYMon(object):
             with open(os.path.join(DEBUGFS, TRACE), 'w') as trace:
                 trace.write('')
 
-            self._pipe = open(os.path.join(DEBUGFS, TRACE_PIPE), 'r')
+            self._pipe = open(os.path.join(DEBUGFS, TRACE_PIPE), 'rb')
             self._pipe_fd = self._pipe.fileno()
 
             flag = fcntl.fcntl(self._pipe_fd, fcntl.F_GETFL)
@@ -310,17 +316,13 @@ class TTYMon(object):
         more = True
         buf = ''
 
-        debug = open('/tmp/debug.txt', 'w+')
-        groups_debug = open('/tmp/groups.txt', 'w+')
-
         while not self._stopping:
             if more:
                 try:
                     r = os.read(self._pipe_fd, 8192)
 
-                    debug.write(r)
                     buf += r
-                except OSError, e:
+                except OSError as e:
                     if e.errno not in (errno.EAGAIN, errno.ENODATA):
                         raise
 
@@ -347,8 +349,6 @@ class TTYMon(object):
 
             comm, pid, ts, rule, probe, tty_name, x, y, items = \
                 start.groups()
-
-            groups_debug.write(repr(start.groups()) + '\n')
 
             pid = int(pid)
             items = int(items)
